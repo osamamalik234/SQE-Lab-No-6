@@ -1,0 +1,161 @@
+
+// ShoppingSystemTest.java
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+
+// Product.java
+public class Product {
+    private String name;
+    private double price;
+
+    public Product(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+}
+
+// Cart.java
+import java.util.ArrayList;
+import java.util.List;
+
+public class Cart {
+    private List<CartItem> items;
+
+    public Cart() {
+        this.items = new ArrayList<>();
+    }
+
+    public void addProduct(Product product, int quantity) {
+        items.add(new CartItem(product, quantity));
+    }
+
+    public void removeProduct(Product product) {
+        items.removeIf(item -> item.getProduct().equals(product));
+    }
+
+    public List<CartItem> viewCart() {
+        return items;
+    }
+
+    public double calculateTotal() {
+        return items.stream().mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity()).sum();
+    }
+
+    public double checkout() {
+        double total = calculateTotal();
+        items.clear(); // Clear cart after checkout
+        return total;
+    }
+}
+
+// CartItem.java
+public class CartItem {
+    private Product product;
+    private int quantity;
+
+    public CartItem(Product product, int quantity) {
+        this.product = product;
+        this.quantity = quantity;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+}
+
+// ShoppingSystem.java
+public class ShoppingSystem {
+    private Cart cart;
+
+    public ShoppingSystem() {
+        this.cart = new Cart();
+    }
+
+    public void addToCart(Product product, int quantity) {
+        cart.addProduct(product, quantity);
+    }
+
+    public void removeFromCart(Product product) {
+        cart.removeProduct(product);
+    }
+
+    public double checkout() {
+        return cart.checkout();
+    }
+
+    public Cart getCart() {
+        return cart;
+    }
+}
+
+
+
+public class ShoppingSystemTest {
+    private ShoppingSystem system;
+    private Product product1;
+    private Product product2;
+
+    @Before
+    public void setUp() {
+        system = new ShoppingSystem();
+        product1 = new Product("Laptop", 1000);
+        product2 = new Product("Phone", 500);
+    }
+
+    @Test
+    public void testAddProductToCart() {
+        system.addToCart(product1, 2);
+        system.addToCart(product2, 1);
+        assertEquals(2, system.getCart().viewCart().size());
+        assertEquals("Laptop", system.getCart().viewCart().get(0).getProduct().getName());
+        assertEquals(2, system.getCart().viewCart().get(0).getQuantity());
+        assertEquals("Phone", system.getCart().viewCart().get(1).getProduct().getName());
+    }
+
+    @Test
+    public void testRemoveProductFromCart() {
+        system.addToCart(product1, 1);
+        system.addToCart(product2, 1);
+        system.removeFromCart(product1);
+        assertEquals(1, system.getCart().viewCart().size());
+        assertEquals("Phone", system.getCart().viewCart().get(0).getProduct().getName());
+    }
+
+    @Test
+    public void testViewCart() {
+        system.addToCart(product1, 3);
+        assertEquals(1, system.getCart().viewCart().size());
+        assertEquals(3, system.getCart().viewCart().get(0).getQuantity());
+    }
+
+    @Test
+    public void testCheckout() {
+        system.addToCart(product1, 1);
+        system.addToCart(product2, 2);
+        double total = system.checkout();
+        assertEquals(2000, total, 0.0);
+        assertEquals(0, system.getCart().viewCart().size());
+    }
+
+    @Test
+    public void testCalculateTotal() {
+        system.addToCart(product1, 1);
+        system.addToCart(product2, 2);
+        double total = system.getCart().calculateTotal();
+        assertEquals(2000, total, 0.0);
+    }
+}
